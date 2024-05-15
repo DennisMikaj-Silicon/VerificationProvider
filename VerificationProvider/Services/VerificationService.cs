@@ -29,6 +29,38 @@ public class VerificationService(ILogger<VerificationService> logger, IServicePr
 		return null!;
 	}
 
+	public VerificationRequest UnpackHTTPVerificationRequest(VerificationRequest verificationRequest)
+	{
+		try
+		{
+            if (verificationRequest != null && !string.IsNullOrEmpty(verificationRequest.Email))
+                return verificationRequest;
+        }
+		catch (Exception ex)
+		{
+            _logger.LogError($"ERROR : GenerateVerificationCode.UnpackHTTPVerificationRequest() :: {ex.Message}");
+        }
+        return null!;
+
+    }
+
+    public string GenerateCodeFromHttp(VerificationRequest verificationRequest)
+	{
+		try
+		{
+			var payload = JsonConvert.SerializeObject(verificationRequest);
+			if (!string.IsNullOrEmpty(payload))
+			{
+				return payload;
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError($"ERROR : GenerateVerificationCode.GenerateServiceBusEmailRequest() :: {ex.Message}");
+		}
+		return null!;
+	}
+
 
 	public string GenerateCode()
 	{
@@ -99,17 +131,17 @@ public class VerificationService(ILogger<VerificationService> logger, IServicePr
                                 <div style='background-color: #f4f4f4; padding: 1rem 2rem;'>
                                 <p>Dear user,</p>
                                 <p>We recieved a request to sign in to your account using e-mail {verificationRequest.Email}. Please verify your account using this verification code:
-                                    {code}
+                                   <div style='font-size:22px; color: #191919;'> {code} </div>
                                 </p>
-                                <div style='color: 191919; font-size: 11px;'>
+                                <div style='color: #191919; font-size: 11px;'>
                                 <p>If you did not request this code, it is possible that someone else is trying to access the Silicon Account <span style='color: #0041cd;'>{verificationRequest.Email}.</span> This Email can't recieve replies. For more information, visit the Silicons Help Center.</p> 
                                 </div>
                                </div>
                                <div style='color: #191919; text-align: center; font-size: 11px;>
                                 <p>© Silicon, Sveavägen 1, SE-123 45 Stockholm, Sweden</p>
+								</div>	
                                 </div>
-                                </div>
-                                </body>
+                           </body>
                         </html>
                       ",
 					PlainText = $"Please verify your account using this verification code: {code}. If you did not request this code, it is possible that someone else is trying to access the Silicon Account {verificationRequest.Email}. This Email can't recieve replies. For more information, visit the Silicons Help Center."
@@ -145,3 +177,5 @@ public class VerificationService(ILogger<VerificationService> logger, IServicePr
 		return null!;
 	}
 }
+
+
