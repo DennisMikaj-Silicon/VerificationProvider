@@ -34,7 +34,9 @@ namespace VerificationProvider.Functions
             {
                 var requestBody = await req.ReadAsStringAsync();
 
-                var verificationRequest = JsonConvert.DeserializeObject<VerificationRequest>(requestBody!);
+                var email = JsonConvert.DeserializeObject<string>(requestBody!);
+
+                var verificationRequest = _verificationService.UnpackHTTPVerificationRequest(email);
 
                 if (verificationRequest == null)
                 {

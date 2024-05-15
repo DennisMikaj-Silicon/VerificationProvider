@@ -34,11 +34,8 @@ public class VerificationService(ILogger<VerificationService> logger, IServicePr
 	{
 		try
 		{
-			if (!string.IsNullOrEmpty(email))
-			{
-				var verificationRequest = JsonConvert.DeserializeObject<VerificationRequest>(email);
-				return verificationRequest!;
-			}
+
+			return new VerificationRequest { Email = email };
         }
 		catch (Exception ex)
 		{
