@@ -30,13 +30,13 @@ public class VerificationService(ILogger<VerificationService> logger, IServicePr
 		return null!;
 	}
 
-	public VerificationRequest UnpackHTTPVerificationRequest(string requestJson)
+	public VerificationRequest UnpackHTTPVerificationRequest(string email)
 	{
 		try
 		{
-			if (!string.IsNullOrEmpty(requestJson))
+			if (!string.IsNullOrEmpty(email))
 			{
-				var verificationRequest = JsonConvert.DeserializeObject<VerificationRequest>(requestJson);
+				var verificationRequest = JsonConvert.DeserializeObject<VerificationRequest>(email);
 				return verificationRequest!;
 			}
         }
