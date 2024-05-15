@@ -11,7 +11,7 @@ namespace VerificationProvider.Services
 		Task<bool> SaveVerificationRequest(VerificationRequest verificationRequest, string code);
 		VerificationRequest UnpackVerificationRequest(ServiceBusReceivedMessage message);
 
-		VerificationRequest UnpackHTTPVerificationRequest(string requestJson);
+		VerificationRequest UnpackHTTPVerificationRequest(string email);
         string GenerateCodeFromHttp(VerificationRequest verificationRequest);
 	}
 }
