@@ -12,39 +12,53 @@ using VerificationProvider.Services;
 
 namespace VerificationProvider.Functions
 {
-	public class GenerateVerificationCodeWithHttp(ILogger<GenerateVerificationCodeWithHttp> logger, IVerificationService verificationService)
-	{
-		private readonly ILogger<GenerateVerificationCodeWithHttp> _logger = logger;
-		private readonly IVerificationService _verificationService = verificationService;
+    public class GenerateVerificationCodeWithHttp
+    {
+        private readonly ILogger<GenerateVerificationCodeWithHttp> _logger;
+        private readonly IVerificationService _verificationService;
 
-		[Function(nameof(GenerateVerificationCodeWithHttp))]
-		[HttpPost]
-		public async Task<IActionResult> RunAsync(
-			[HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestData req)
-		{
-			try
-			{
-				// Deserialize the request body to extract necessary data
-				var requestBody = await req.ReadAsStringAsync();
-				var verificationRequest = JsonConvert.DeserializeObject<VerificationRequest>(requestBody!);
+        public GenerateVerificationCodeWithHttp(ILogger<GenerateVerificationCodeWithHttp> logger, IVerificationService verificationService)
+        {
+            _logger = logger;
+            _verificationService = verificationService;
+        }
 
-				// Call UnpackVerificationRequest method passing the deserialized verification request
-				var unpackedRequest = _verificationService.UnpackHTTPVerificationRequest(verificationRequest!);
+        [Function(nameof(GenerateVerificationCodeWithHttp))]
+        public async Task<HttpResponseData> RunAsync(
+    [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestData req,
+    FunctionContext context)
+        {
+            var response = req.CreateResponse(HttpStatusCode.OK);
 
-				// Generate verification code
-				var code = _verificationService.GenerateCode();
+            try
+            {
+                var requestBody = await req.ReadAsStringAsync();
 
-				// Save verification request (if needed)
-				// var result = await _verificationService.SaveVerificationRequest(unpackedRequest, code);
+                var verificationRequest = JsonConvert.DeserializeObject<VerificationRequest>(requestBody!);
 
-				// Assuming you need to return the generated code in the response
-				return new OkObjectResult(code);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError($"ERROR : GenerateVerificationCodeHttp.RunAsync() :: {ex.Message}");
-				return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-			}
-		}
-	}
+                if (verificationRequest == null)
+                {
+                    _logger.LogError("Failed to unpack HTTP verification request.");
+                    response.StatusCode = HttpStatusCode.BadRequest;
+                    return response;
+                }
+
+                var code = _verificationService.GenerateCode();
+
+                var emailRequest = _verificationService.GenerateEmailRequest(verificationRequest, code);
+
+                var emailRequestJson = JsonConvert.SerializeObject(emailRequest);
+
+                await response.WriteStringAsync(emailRequestJson);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"ERROR : GenerateVerificationCodeHttp.RunAsync() :: {ex.Message}");
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                return response;
+            }
+        }
+    }
 }
