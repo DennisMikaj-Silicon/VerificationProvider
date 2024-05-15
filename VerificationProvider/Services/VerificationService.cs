@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,8 @@ public class VerificationService(ILogger<VerificationService> logger, IServicePr
 	{
 		try
 		{
-            if (verificationRequest != null && !string.IsNullOrEmpty(verificationRequest.Email))
+			var req = JsonConvert.SerializeObject(verificationRequest);
+            if (req != null && !string.IsNullOrEmpty(req))
                 return verificationRequest;
         }
 		catch (Exception ex)
